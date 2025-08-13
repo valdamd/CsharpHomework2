@@ -1,0 +1,11 @@
+# Используем 4 пробела в C#
+[*.cs]
+indent_style = space
+indent_size = 4
+dotnet_diagnostic.SA0001.severity = none
+dotnet_diagnostic.SA1600.severity = none
+# Используем 2 пробела в XML
+[*.xml]
+indent_style = space
+indent_size = 2
+dotnet_diagnostic.SA0001.severity = none

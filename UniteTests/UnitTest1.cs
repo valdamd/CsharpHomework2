@@ -1,11 +1,15 @@
-﻿using Xunit;
+﻿// <copyright file="UnitTest1.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace UniteTests;
+
 using FluentAssertions;
-using task2;
+using Task2;
+using Xunit;
 using Assert = Xunit.Assert;
 
-namespace Task2;
-
-public class Tests
+public class UnitTest1
 {
     [Fact]
     public void Test_Addition_Operator()
@@ -69,9 +73,9 @@ public class Tests
     [Fact]
     public void Test_Multiplication_By_Polynomial()
     {
-        var p1 = new Polynomial(1, 1);   // 1 + x
-        var p2 = new Polynomial(1, -1);  // 1 - x
-        var expected = new Polynomial(1, 0, -1); // 1 - x^2
+        var p1 = new Polynomial(1, 1);
+        var p2 = new Polynomial(1, -1);
+        var expected = new Polynomial(1, 0, -1);
 
         (p1 * p2).Should().BeEquivalentTo(expected);
     }
@@ -103,8 +107,8 @@ public class Tests
     [Fact]
     public void Test_Evaluate()
     {
-        var p = new Polynomial(1, 2, 3); // 1 + 2x + 3x^2
-        double result = p.Evaluate(2);   // 1 + 2*2 + 3*4 = 1 + 4 + 12 = 17
+        var p = new Polynomial(1, 2, 3);
+        double result = p.Evaluate(2);
 
         result.Should().Be(17);
     }
@@ -114,26 +118,21 @@ public class Tests
     {
         var p1 = new Polynomial(1, 2, 3);
         var p2 = new Polynomial(1, 2, 3);
-
-        // Для этого теста нужно будет добавить метод Equals в класс Polynomial
         p1.Should().BeEquivalentTo(p2);
     }
 
     [Fact]
     public void Test_ToString()
     {
-        var p = new Polynomial(3, -2, 1); // 3 - 2x + x^2
-
+        var p = new Polynomial(3, -2, 1);
         var str = p.ToString();
-
         str.Should().Be("x^2 - 2x + 3");
     }
 
     [Fact]
     public void Test_EmptyPolynomial_ToString()
     {
-        var p = new Polynomial(0); // Только нулевой коэффициент
-
+        var p = new Polynomial(0);
         p.ToString().Should().Be("0");
     }
 
@@ -160,7 +159,7 @@ public class Tests
     [Fact]
     public void Test_RemoveLeadingZeros()
     {
-        var p = new Polynomial(1, 0, 0, 0); // DeleteLastZeros вызывается автоматически в конструкторе
+        var p = new Polynomial(1, 0, 0, 0);
 
         p.Degree.Should().Be(0);
     }
@@ -176,7 +175,7 @@ public class Tests
     [Fact]
     public void Test_Negative_Coefficients_ToString()
     {
-        var p = new Polynomial(-1, 0, 2); // -1 + 2x^2
+        var p = new Polynomial(-1, 0, 2);
         var str = p.ToString();
 
         str.Should().Be("2x^2 - 1");
@@ -185,28 +184,28 @@ public class Tests
     [Fact]
     public void Test_Single_Variable_ToString()
     {
-        var p = new Polynomial(0, 1); // x
+        var p = new Polynomial(0, 1);
         p.ToString().Should().Be("x");
     }
 
     [Fact]
     public void Test_Constant_ToString()
     {
-        var p = new Polynomial(5); // 5
+        var p = new Polynomial(5);
         p.ToString().Should().Be("5");
     }
 
     [Fact]
     public void Test_Negative_Constant_ToString()
     {
-        var p = new Polynomial(-3); // -3
+        var p = new Polynomial(-3);
         p.ToString().Should().Be("-3");
     }
 
     [Fact]
     public void Test_Complex_Polynomial_ToString()
     {
-        var p = new Polynomial(1, -1, 0, 1, -1); // 1 - x + x^3 - x^4
+        var p = new Polynomial(1, -1, 0, 1, -1);
         p.ToString().Should().Be("-x^4 + x^3 - x + 1");
     }
 
@@ -214,11 +213,9 @@ public class Tests
     public void Test_Indexer_Out_Of_Range()
     {
         var p = new Polynomial(1, 2, 3);
-        
-        // Получение коэффициента за пределами степени должно возвращать 0
+
         p[5].Should().Be(0);
-        
-        // Установка коэффициента за пределами степени должна расширить полином
+
         p[5] = 7;
         p[5].Should().Be(7);
         p.Degree.Should().Be(5);
@@ -228,8 +225,7 @@ public class Tests
     public void Test_Indexer_Negative_Index()
     {
         var p = new Polynomial(1, 2, 3);
-        
-        // Отрицательный индекс должен выбрасывать исключение
+
         Assert.Throws<ArgumentOutOfRangeException>(() => p[-1]);
         Assert.Throws<ArgumentOutOfRangeException>(() => p[-1] = 5);
     }
