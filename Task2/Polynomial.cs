@@ -161,7 +161,6 @@ public sealed class Polynomial
         numeratorCoefficients.Reverse();
         denominatorCoefficients.Reverse();
 
-        // SA1414: Именованные элементы tuple
         var (quotientDoubleListCoefficients, remainderDoubleListCoefficients) =
             ExtendedSyntheticDivision(numeratorCoefficients, denominatorCoefficients);
 
