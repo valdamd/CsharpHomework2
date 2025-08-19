@@ -8,8 +8,7 @@ using FluentAssertions;
 using Task2;
 using Xunit;
 using Assert = Xunit.Assert;
-
-public class UnitTest1
+public sealed class UnitTest1
 {
     [Fact]
     public void Test_Addition_Operator()

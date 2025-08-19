@@ -4,7 +4,7 @@
 
 namespace Task2;
 
-public sealed class Polynomial
+internal sealed class Polynomial
 {
     private readonly List<double> coefficients;
 
