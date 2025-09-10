@@ -4,7 +4,10 @@ indent_style = space
 indent_size = 4
 dotnet_diagnostic.SA0001.severity = none
 dotnet_diagnostic.SA1600.severity = none
-# Используем 2 пробела в XML
+dotnet_diagnostic.SA1633.severity = none
+dotnet_diagnostic.SA1200.severity = none
+dotnet_diagnostic.SA1101.severity = none
+dotnet_diagnostic.SA1309.severity = none
 [*.xml]
 indent_style = space
 indent_size = 2

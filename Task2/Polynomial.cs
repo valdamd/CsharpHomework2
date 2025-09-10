@@ -1,31 +1,26 @@
-﻿// <copyright file="Polynomial.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
-namespace Task2;
+﻿namespace Task2;
 
 internal sealed class Polynomial
 {
-    private readonly List<double> coefficients;
-
-    private int degree;
+    private readonly List<double> _coefficients;
+    private int _degree;
 
     public Polynomial(params double[] coefficients)
     {
         if (coefficients.Length == 0)
         {
-            this.coefficients = new List<double> { 0 };
-            this.degree = 0;
+            _coefficients = new List<double> { 0 };
+            _degree = 0;
         }
         else
         {
-            this.coefficients = new List<double>(coefficients);
-            this.degree = coefficients.Length - 1;
-            this.DeleteLastZeros();
+            _coefficients = new List<double>(coefficients);
+            _degree = coefficients.Length - 1;
+            DeleteLastZeros();
         }
     }
 
-    public int Degree => this.degree;
+    public int Degree => _degree;
 
     public double this[int index]
     {
@@ -36,12 +31,12 @@ internal sealed class Polynomial
                 throw new ArgumentOutOfRangeException(nameof(index), "Индекс не может быть отрицательным");
             }
 
-            if (index > this.degree)
+            if (index > _degree)
             {
                 return 0;
             }
 
-            return this.coefficients[index];
+            return _coefficients[index];
         }
 
         set
@@ -51,18 +46,18 @@ internal sealed class Polynomial
                 throw new ArgumentOutOfRangeException(nameof(index), "Индекс не может быть отрицательным");
             }
 
-            if (index > this.degree)
+            if (index > _degree)
             {
-                for (var i = this.coefficients.Count; i <= index; i++)
+                for (var i = _coefficients.Count; i <= index; i++)
                 {
-                    this.coefficients.Add(0);
+                    _coefficients.Add(0);
                 }
 
-                this.degree = index;
+                _degree = index;
             }
 
-            this.coefficients[index] = value;
-            this.DeleteLastZeros();
+            _coefficients[index] = value;
+            DeleteLastZeros();
         }
     }
 
@@ -71,9 +66,9 @@ internal sealed class Polynomial
     public static Polynomial operator -(Polynomial polynomial)
     {
         var result = polynomial.Clone();
-        for (var i = 0; i <= result.degree; i++)
+        for (var i = 0; i < result._coefficients.Count; i++)
         {
-            result.coefficients[i] *= -1;
+            result._coefficients[i] *= -1;
         }
 
         return result;
@@ -91,22 +86,22 @@ internal sealed class Polynomial
 
     public static Polynomial operator -(Polynomial polynomial, double value)
     {
-        return MinusSignOperation(polynomial, value, false);
+        return MinusSignOperation(polynomial, value);
     }
 
     public static Polynomial operator -(double value, Polynomial polynomial)
     {
-        return MinusSignOperation(polynomial, value, true);
+        return MinusSignOperation(-polynomial, -value);
     }
 
     public static Polynomial operator +(Polynomial firstPolynomial, Polynomial secondPolynomial)
     {
-        return AddTwoPolynomialsWithMultiplier(firstPolynomial, secondPolynomial, 1);
+        return AddTwoPolynomials(firstPolynomial, secondPolynomial);
     }
 
     public static Polynomial operator -(Polynomial firstPolynomial, Polynomial secondPolynomial)
     {
-        return AddTwoPolynomialsWithMultiplier(firstPolynomial, secondPolynomial, -1);
+        return SubtractTwoPolynomials(firstPolynomial, secondPolynomial);
     }
 
     public static Polynomial operator *(Polynomial polynomial, double value)
@@ -121,21 +116,18 @@ internal sealed class Polynomial
 
     public static Polynomial operator *(Polynomial firstPolynomial, Polynomial secondPolynomial)
     {
-        var firstPolynomialCoefficients = firstPolynomial.coefficients.ToArray();
-        var secondPolynomialCoefficients = secondPolynomial.coefficients.ToArray();
+        var len = firstPolynomial._coefficients.Count + secondPolynomial._coefficients.Count - 1;
+        var newCoef = new List<double>(new double[len]);
 
-        var len = firstPolynomialCoefficients.Length + secondPolynomialCoefficients.Length - 1;
-        var newCoef = new double[len];
-
-        for (var i = 0; i < firstPolynomialCoefficients.Length; i++)
+        for (var i = 0; i < firstPolynomial._coefficients.Count; i++)
         {
-            for (var j = 0; j < secondPolynomialCoefficients.Length; j++)
+            for (var j = 0; j < secondPolynomial._coefficients.Count; j++)
             {
-                newCoef[i + j] += firstPolynomialCoefficients[i] * secondPolynomialCoefficients[j];
+                newCoef[i + j] += firstPolynomial._coefficients[i] * secondPolynomial._coefficients[j];
             }
         }
 
-        return new Polynomial(newCoef);
+        return new Polynomial(newCoef.ToArray());
     }
 
     public static Polynomial operator /(Polynomial polynomial, double value)
@@ -150,55 +142,36 @@ internal sealed class Polynomial
 
     public static (Polynomial Quotient, Polynomial Remainder) operator /(Polynomial numeratorPolynomial, Polynomial denominatorPolynomial)
     {
-        if (denominatorPolynomial.degree == 0 && Math.Abs(denominatorPolynomial.coefficients[0]) < double.Epsilon)
+        if (denominatorPolynomial._degree == 0 && Math.Abs(denominatorPolynomial._coefficients[0]) < double.Epsilon)
         {
             throw new DivideByZeroException("Деление на нулевой полином");
         }
 
-        var numeratorCoefficients = new List<double>(numeratorPolynomial.coefficients);
-        var denominatorCoefficients = new List<double>(denominatorPolynomial.coefficients);
-
+        var numeratorCoefficients = new List<double>(numeratorPolynomial._coefficients);
         numeratorCoefficients.Reverse();
+        var denominatorCoefficients = new List<double>(denominatorPolynomial._coefficients);
         denominatorCoefficients.Reverse();
 
-        var (quotientDoubleListCoefficients, remainderDoubleListCoefficients) =
+        var (quotientCoefficients, remainderCoefficients) =
             ExtendedSyntheticDivision(numeratorCoefficients, denominatorCoefficients);
 
-        quotientDoubleListCoefficients.Reverse();
-        remainderDoubleListCoefficients.Reverse();
+        quotientCoefficients.Reverse();
+        remainderCoefficients.Reverse();
 
-        var quotientCoefficients = quotientDoubleListCoefficients.ToArray();
-        var remainderCoefficients = remainderDoubleListCoefficients.ToArray();
-
-        var quotientPolynomial = new Polynomial(quotientCoefficients);
-        var remainderPolynomial = new Polynomial(remainderCoefficients);
-
-        return (quotientPolynomial, remainderPolynomial);
+        return (new Polynomial(quotientCoefficients.ToArray()), new Polynomial(remainderCoefficients.ToArray()));
     }
 
     public Polynomial Clone()
     {
-        var copy = new double[this.coefficients.Count];
-        for (int i = 0; i < this.coefficients.Count; i++)
-        {
-            copy[i] = this.coefficients[i];
-        }
-
-        return new Polynomial(copy);
+        return new Polynomial(_coefficients.ToArray());
     }
 
     public double Evaluate(double value)
     {
-        if (this.coefficients.Count == 0)
+        var result = 0.0;
+        for (var i = _degree; i >= 0; i--)
         {
-            return 0;
-        }
-
-        var result = this.coefficients[this.degree];
-
-        for (var i = this.degree - 1; i >= 0; i--)
-        {
-            result = (result * value) + this.coefficients[i];
+            result = (result * value) + _coefficients[i];
         }
 
         return result;
@@ -206,7 +179,7 @@ internal sealed class Polynomial
 
     public override string ToString()
     {
-        if (this.coefficients.Count == 0)
+        if (_coefficients.Count == 0)
         {
             return "0";
         }
@@ -224,22 +197,34 @@ internal sealed class Polynomial
             }
 
             var sign = GetSign(coefficient, isFirstTerm);
-            var absCoefficient = Math.Abs(coefficient);
-
-            return power switch
+            if (power == 0)
             {
-                0 => $"{sign}{absCoefficient}",
-                1 => absCoefficient == 1 ? $"{sign}x" : $"{sign}{absCoefficient}x",
-                _ => absCoefficient == 1 ? $"{sign}x^{power}" : $"{sign}{absCoefficient}x^{power}",
-            };
+                return $"{sign}{Math.Abs(coefficient)}";
+            }
+
+            if (power == 1)
+            {
+                if (coefficient == 1 || coefficient == -1)
+                {
+                    return $"{sign}x";
+                }
+
+                return $"{sign}{Math.Abs(coefficient)}x";
+            }
+
+            if (coefficient == 1 || coefficient == -1)
+            {
+                return $"{sign}x^{power}";
+            }
+
+            return $"{sign}{Math.Abs(coefficient)}x^{power}";
         }
 
         var terms = new List<string>();
-
-        for (var index = this.degree; index >= 0; index--)
+        for (var index = _degree; index >= 0; index--)
         {
-            var coefficient = this.coefficients[index];
-            if (coefficient != 0)
+            var coefficient = _coefficients[index];
+            if (Math.Abs(coefficient) > double.Epsilon)
             {
                 terms.Add(FormatTerm(coefficient, index, terms.Count == 0));
             }
@@ -248,130 +233,95 @@ internal sealed class Polynomial
         return terms.Count == 0 ? "0" : string.Join(string.Empty, terms);
     }
 
-    private static Polynomial MinusSignOperation(Polynomial polynomial, double value, bool isValueFirst)
+    private static Polynomial MinusSignOperation(Polynomial polynomial, double value)
     {
         var result = polynomial.Clone();
-        if (isValueFirst)
-        {
-            for (var i = 0; i <= result.degree; i++)
-            {
-                result.coefficients[i] *= -1;
-            }
-
-            result.coefficients[0] += value;
-        }
-        else
-        {
-            result.coefficients[0] -= value;
-        }
-
+        result._coefficients[0] -= value;
         return result;
     }
 
     private static Polynomial MultiplyPolynomialByValue(Polynomial polynomial, double value)
     {
-        var resultCoefficients = polynomial.coefficients.ToArray();
-        for (var i = 0; i < resultCoefficients.Length; ++i)
+        var resultCoefficients = new List<double>(polynomial._coefficients.Count);
+        for (var i = 0; i < polynomial._coefficients.Count; i++)
         {
-            resultCoefficients[i] *= value;
+            resultCoefficients.Add(polynomial._coefficients[i] * value);
         }
 
-        return new Polynomial(resultCoefficients);
+        return new Polynomial(resultCoefficients.ToArray());
     }
 
-    private static Polynomial AddTwoPolynomialsWithMultiplier(Polynomial firstPolynomial, Polynomial secondPolynomial, int multiplier)
+    private static Polynomial AddTwoPolynomials(Polynomial firstPolynomial, Polynomial secondPolynomial)
     {
-        var firstPolynomialCoefficients = firstPolynomial.coefficients.ToArray();
-        var secondPolynomialCoefficients = secondPolynomial.coefficients.ToArray();
+        var resultCoefficients = new List<double>();
+        int maxDegree = Math.Max(firstPolynomial._degree, secondPolynomial._degree);
 
-        double[] resultCoefficients;
-
-        if (firstPolynomial.degree > secondPolynomial.degree)
+        for (var i = 0; i <= maxDegree; i++)
         {
-            resultCoefficients = AddDifferentSizePolynomials(firstPolynomial, secondPolynomial, multiplier);
-        }
-        else if (firstPolynomial.degree < secondPolynomial.degree)
-        {
-            resultCoefficients = AddDifferentSizePolynomials(secondPolynomial, firstPolynomial, multiplier);
-        }
-        else
-        {
-            resultCoefficients = new double[firstPolynomial.degree + 1];
-            for (var i = 0; i <= firstPolynomial.degree; i++)
-            {
-                resultCoefficients[i] = firstPolynomialCoefficients[i] + (multiplier * secondPolynomialCoefficients[i]);
-            }
+            double firstCoef = i <= firstPolynomial._degree ? firstPolynomial._coefficients[i] : 0;
+            double secondCoef = i <= secondPolynomial._degree ? secondPolynomial._coefficients[i] : 0;
+            resultCoefficients.Add(firstCoef + secondCoef);
         }
 
-        return new Polynomial(resultCoefficients);
+        return new Polynomial(resultCoefficients.ToArray());
     }
 
-    private static double[] AddDifferentSizePolynomials(Polynomial biggestPolynomial, Polynomial smallestPolynomial, int multiplier)
+    private static Polynomial SubtractTwoPolynomials(Polynomial firstPolynomial, Polynomial secondPolynomial)
     {
-        var resultCoefficients = new double[biggestPolynomial.degree + 1];
-        var biggerPolynomialCoefficients = biggestPolynomial.coefficients.ToArray();
-        var smallestPolynomialCoefficients = smallestPolynomial.coefficients.ToArray();
+        var resultCoefficients = new List<double>();
+        int maxDegree = Math.Max(firstPolynomial._degree, secondPolynomial._degree);
 
-        for (var i = 0; i <= biggestPolynomial.degree; i++)
+        for (var i = 0; i <= maxDegree; i++)
         {
-            if (i <= smallestPolynomial.degree)
-            {
-                resultCoefficients[i] =
-                    biggerPolynomialCoefficients[i] + (multiplier * smallestPolynomialCoefficients[i]);
-            }
-            else
-            {
-                resultCoefficients[i] = biggerPolynomialCoefficients[i];
-            }
+            double firstCoef = i <= firstPolynomial._degree ? firstPolynomial._coefficients[i] : 0;
+            double secondCoef = i <= secondPolynomial._degree ? secondPolynomial._coefficients[i] : 0;
+            resultCoefficients.Add(firstCoef - secondCoef);
         }
 
-        return resultCoefficients;
+        return new Polynomial(resultCoefficients.ToArray());
     }
 
     private static (List<double> Quotient, List<double> Remainder) ExtendedSyntheticDivision(List<double> dividendCoefficients, List<double> divisorCoefficients)
     {
         var quotientCoefficients = new List<double>(dividendCoefficients);
-
         var normalizer = divisorCoefficients[0];
 
-        for (var i = 0; i < dividendCoefficients.Count - (divisorCoefficients.Count - 1); i++)
+        for (var i = 0; i <= dividendCoefficients.Count - divisorCoefficients.Count; i++)
         {
             quotientCoefficients[i] /= normalizer;
-
             var coefficient = quotientCoefficients[i];
-            if (coefficient != 0)
+
+            for (var j = 1; j < divisorCoefficients.Count; j++)
             {
-                for (var j = 1; j < divisorCoefficients.Count; j++)
-                {
-                    quotientCoefficients[i + j] += -divisorCoefficients[j] * coefficient;
-                }
+                quotientCoefficients[i + j] -= divisorCoefficients[j] * coefficient;
             }
         }
 
         var separator = quotientCoefficients.Count - (divisorCoefficients.Count - 1);
-
         var remainderCoefficients = quotientCoefficients.GetRange(separator, quotientCoefficients.Count - separator);
-        for (var i = 0; i < separator; i++)
+        quotientCoefficients.RemoveRange(separator, quotientCoefficients.Count - separator);
+
+        while (remainderCoefficients.Count > 1 && Math.Abs(remainderCoefficients[^1]) < double.Epsilon)
         {
-            remainderCoefficients.Insert(0, 0);
+            remainderCoefficients.RemoveAt(remainderCoefficients.Count - 1);
         }
 
-        return (quotientCoefficients.GetRange(0, separator), remainderCoefficients);
+        return (quotientCoefficients, remainderCoefficients);
     }
 
     private static Polynomial PlusSignOperation(Polynomial polynomial, double value)
     {
         var result = polynomial.Clone();
-        result.coefficients[0] += value;
+        result._coefficients[0] += value;
         return result;
     }
 
     private void DeleteLastZeros()
     {
-        while (this.coefficients.Count > 1 && this.coefficients[this.coefficients.Count - 1] == 0)
+        while (_coefficients.Count > 1 && Math.Abs(_coefficients[_coefficients.Count - 1]) < double.Epsilon)
         {
-            this.coefficients.RemoveAt(this.coefficients.Count - 1);
-            this.degree--;
+            _coefficients.RemoveAt(_coefficients.Count - 1);
+            _degree--;
         }
     }
 }

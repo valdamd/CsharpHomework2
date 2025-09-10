@@ -1,14 +1,11 @@
-﻿// <copyright file="UnitTest1.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
-namespace UniteTests;
-
-using FluentAssertions;
+﻿using FluentAssertions;
 using Task2;
 using Xunit;
 using Assert = Xunit.Assert;
-public sealed class UnitTest1
+
+namespace UnitTests;
+
+public sealed class UnitTestsPolynomial
 {
     [Fact]
     public void Test_Addition_Operator()
@@ -40,32 +37,56 @@ public sealed class UnitTest1
     }
 
     [Fact]
-    public void Test_Add_Scalar()
+    public void Test_Add_Polynomial_Plus_Scalar()
     {
         var p = new Polynomial(1, 2, 3);
         var expected = new Polynomial(6, 2, 3);
 
         (p + 5).Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void Test_Add_Scalar_Plus_Polynomial()
+    {
+        var p = new Polynomial(1, 2, 3);
+        var expected = new Polynomial(6, 2, 3);
+
         (5 + p).Should().BeEquivalentTo(expected);
     }
 
     [Fact]
-    public void Test_Subtract_Scalar()
+    public void Test_Subtract_Polynomial_Minus_Scalar()
     {
         var p = new Polynomial(6, 2, 3);
         var expected = new Polynomial(1, 2, 3);
 
         (p - 5).Should().BeEquivalentTo(expected);
-        (6 - new Polynomial(5, -2, -3)).Should().BeEquivalentTo(expected);
     }
 
     [Fact]
-    public void Test_Multiplication_By_Scalar()
+    public void Test_Subtract_Scalar_Minus_Polynomial()
+    {
+        var p = new Polynomial(5, -2, -3);
+        var expected = new Polynomial(1, 2, 3);
+
+        (6 - p).Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void Test_Multiplication_Polynomial_Times_Scalar()
     {
         var p = new Polynomial(1, 2, 3);
         var expected = new Polynomial(2, 4, 6);
 
         (p * 2).Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public void Test_Multiplication_Scalar_Times_Polynomial()
+    {
+        var p = new Polynomial(1, 2, 3);
+        var expected = new Polynomial(2, 4, 6);
+
         (2 * p).Should().BeEquivalentTo(expected);
     }
 
